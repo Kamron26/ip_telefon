@@ -2,35 +2,48 @@ services:
     asterisk:
         image: andrius/asterisk
         container_name: asterisk
-        network_mode: host
+        networks:
+            - app-network
         restart: always
-
         volumes:
             - ./asterisk/config:/etc/asterisk
             - ./asterisk/logs:/var/log/asterisk
+        ports:
+            - "5038:5038"   # AMI (TCP)
+            - "5060:5060/udp"   # SIP (UDP) — TELEFON UCHUN!
+            - "10000-10100:10000-10100/udp"   # RTP (ovoz)
 
     php:
         container_name: ${DOCKER_PROJECT_NAME}_php
         build: ./docker/php
         restart: unless-stopped
+        networks:
+            - app-network  # 🆕 QO‘SHILDI
         volumes:
             - ./:/var/www/html
             - ./docker/php/php.ini:/usr/local/etc/php/php.ini
-            # if you use supervisor
-            #- ./docker/php/supervisor/messenger-worker.conf:/etc/supervisor/conf.d/messenger-worker.conf
         depends_on:
             - db
+            - asterisk
+        environment:
+            - ASTERISK_HOST=asterisk  # Konteyner nomi orqali ulanish
+            - ASTERISK_PORT=5038
+            - ASTERISK_USER=admin
+            - ASTERISK_PASS=1234
 
     nginx:
         container_name: ${DOCKER_PROJECT_NAME}_nginx
         image: nginx:1.28.0
         restart: unless-stopped
+        networks:
+            - app-network  # 🆕 QO‘SHILDI
         volumes:
             - ./docker/nginx/logs:/var/log/nginx
             - ./:/var/www/html
             - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
         depends_on:
             - db
+            - php
         ports:
             - 127.0.0.1:${DOCKER_NGINX_PORT}:80
 
@@ -38,14 +51,15 @@ services:
         image: mariadb:11.7.2
         container_name: ${DOCKER_PROJECT_NAME}_db
         restart: unless-stopped
+        networks:
+            - app-network  # 🆕 QO‘SHILDI
         environment:
             MYSQL_ROOT_PASSWORD: ${DATABASE_PASSWORD}
             MYSQL_DATABASE: ${DOCKER_PROJECT_NAME}
         volumes:
-            # - ./sql:/sql
             - ./docker/mysql/db:/var/lib/mysql
         ports:
-            - 127.0.0.1:${DOCKER_DATABASE_PORT}:3306  # use 5432 for pgsql
+            - 127.0.0.1:${DOCKER_DATABASE_PORT}:3306 # use 5432 for pgsql
 
 
     #    redis:
@@ -162,3 +176,7 @@ services:
             - ./docker/mailserver/init-dkim.sh:/docker/init-dkim.sh
             - ./docker/mailserver/dkim:/docker/mailserver/dkim
             - ./docker/mailserver/opendkim/:/etc/opendkim/
+
+networks:
+    app-network:  # 🆕 YANGI TARMOQ
+        driver: bridge

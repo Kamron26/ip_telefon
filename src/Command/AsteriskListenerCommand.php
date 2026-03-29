@@ -28,7 +28,7 @@ class AsteriskListenerCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $options = [
-            'host' => $_ENV['ASTERISK_HOST'] ?? '127.0.0.1',
+            'host' => $_ENV['ASTERISK_HOST'] ?? 'asterisk',
             'scheme' => 'tcp://',
             'port' => $_ENV['ASTERISK_PORT'] ?? 5038,
             'username' => $_ENV['ASTERISK_USER'] ?? 'admin',
@@ -41,13 +41,33 @@ class AsteriskListenerCommand extends Command
         $client->open();
 
         $output->writeln("Asterisk listener started...");
+        $output->writeln("Waiting for events...");
 
+        // PAMI 1.x da ishlaydigan universal loop
         while (true) {
+            // Ma'lumotlarni qabul qilish va qayta ishlash
             $client->process();
 
-            foreach ($client->getEvents() as $event) {
-                $this->handleEvent($event, $output);
+            // Eventlarni olishning 2 xil usuli (qaysi biri ishlasa)
+            // Usul 1: getEvents() array qaytaradi
+            if (method_exists($client, 'getEvents')) {
+                $events = $client->getEvents();
+                if (!empty($events)) {
+                    foreach ($events as $event) {
+                        $this->handleEvent($event, $output);
+                    }
+                }
             }
+
+            // Usul 2: getEvent() object qaytaradi (agar mavjud bo'lsa)
+            if (method_exists($client, 'getEvent')) {
+                while ($event = $client->getEvent()) {
+                    $this->handleEvent($event, $output);
+                }
+            }
+
+            // CPU yuklamasligi uchun qisqa kutish
+            usleep(50000); // 0.05 sekund
         }
 
         return Command::SUCCESS;
@@ -57,53 +77,67 @@ class AsteriskListenerCommand extends Command
     {
         $eventName = $event->getName();
 
+        // Debug uchun - barcha eventlarni chiqaramiz
+        $output->writeln("Event received: " . $eventName);
+
+        // 📞 CALL BOSHLANDI
         if ($eventName === 'Dial') {
             $caller = $event->getKey('CallerIDNum');
             $callee = $event->getKey('Destination');
 
-            $call = new CallLog();
-            $call->setCaller($caller);
-            $call->setCallee($callee);
-            $call->setStatus('ringing');
-            $call->setStartedAt(new \DateTime());
+            if ($caller && $callee) {
+                $call = new CallLog();
+                $call->setCaller($caller);
+                $call->setCallee($callee);
+                $call->setStatus('ringing');
+                $call->setStartedAt(new \DateTime());
 
-            $this->em->persist($call);
-            $this->em->flush();
-
-            $output->writeln("Dial: $caller → $callee");
-        }
-
-        if ($eventName === 'BridgeEnter') {
-            $caller = $event->getKey('CallerIDNum');
-
-            $call = $this->em->getRepository(CallLog::class)
-                ->findOneBy(['caller' => $caller], ['id' => 'DESC']);
-
-            if ($call) {
-                $call->setStatus('answered');
-                $call->setAnsweredAt(new \DateTime());
+                $this->em->persist($call);
                 $this->em->flush();
-                $output->writeln("Answered: $caller");
+
+                $output->writeln("📞 Dial: $caller → $callee");
             }
         }
 
+        // 📞 JAVOB BERILDI
+        if ($eventName === 'BridgeEnter') {
+            $caller = $event->getKey('CallerIDNum');
+
+            if ($caller) {
+                $call = $this->em->getRepository(CallLog::class)
+                    ->findOneBy(['caller' => $caller, 'status' => 'ringing'], ['id' => 'DESC']);
+
+                if ($call) {
+                    $call->setStatus('answered');
+                    $call->setAnsweredAt(new \DateTime());
+                    $this->em->flush();
+
+                    $output->writeln("✅ Answered: $caller");
+                }
+            }
+        }
+
+        // 📞 TUGADI
         if ($eventName === 'Hangup') {
             $caller = $event->getKey('CallerIDNum');
 
-            $call = $this->em->getRepository(CallLog::class)
-                ->findOneBy(['caller' => $caller], ['id' => 'DESC']);
+            if ($caller) {
+                $call = $this->em->getRepository(CallLog::class)
+                    ->findOneBy(['caller' => $caller], ['id' => 'DESC']);
 
-            if ($call) {
-                $call->setStatus('finished');
-                $call->setEndedAt(new \DateTime());
+                if ($call && $call->getStatus() !== 'finished') {
+                    $call->setStatus('finished');
+                    $call->setEndedAt(new \DateTime());
 
-                if ($call->getAnsweredAt()) {
-                    $duration = time() - $call->getAnsweredAt()->getTimestamp();
-                    $call->setDuration($duration);
+                    if ($call->getAnsweredAt()) {
+                        $duration = $call->getEndedAt()->getTimestamp() - $call->getAnsweredAt()->getTimestamp();
+                        $call->setDuration($duration);
+                    }
+
+                    $this->em->flush();
+
+                    $output->writeln("❌ Hangup: $caller");
                 }
-
-                $this->em->flush();
-                $output->writeln("Hangup: $caller");
             }
         }
     }

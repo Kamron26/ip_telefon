@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "23116cb343ef3ff8c6adb1ee8e9dce81",
+    "content-hash": "94de2c14f3e7cfd9dcdb4c2d19c8d571",
     "packages": [
         {
             "name": "api-platform/doctrine-common",
@@ -2632,16 +2632,16 @@
         },
         {
             "name": "marcelog/pami",
-            "version": "v2.0.2",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/marcelog/PAMI.git",
-                "reference": "f586d0fcbf7db7952965ccb91e4ed231bd168fb3"
+                "reference": "db4b2278e2f15362a176e79ae96a0fa3b2e66dd1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/marcelog/PAMI/zipball/f586d0fcbf7db7952965ccb91e4ed231bd168fb3",
-                "reference": "f586d0fcbf7db7952965ccb91e4ed231bd168fb3",
+                "url": "https://api.github.com/repos/marcelog/PAMI/zipball/db4b2278e2f15362a176e79ae96a0fa3b2e66dd1",
+                "reference": "db4b2278e2f15362a176e79ae96a0fa3b2e66dd1",
                 "shasum": ""
             },
             "require": {
@@ -2661,6 +2661,7 @@
                 "sebastian/phpcpd": "*",
                 "squizlabs/php_codesniffer": "2.*"
             },
+            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -2669,7 +2670,7 @@
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
-                "Apache2"
+                "Apache-2.0"
             ],
             "authors": [
                 {
@@ -2694,9 +2695,9 @@
             ],
             "support": {
                 "issues": "https://github.com/marcelog/PAMI/issues",
-                "source": "https://github.com/marcelog/PAMI/tree/v2.0.2"
+                "source": "https://github.com/marcelog/PAMI/tree/master"
             },
-            "time": "2017-10-10T18:59:17+00:00"
+            "time": "2020-02-28T11:04:01+00:00"
         },
         {
             "name": "nelmio/cors-bundle",
@@ -7728,7 +7729,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "marcelog/pami": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
