@@ -2,16 +2,12 @@ services:
     asterisk:
         image: andrius/asterisk
         container_name: asterisk
-        networks:
-            - app-network
+        network_mode: host
         restart: always
+
         volumes:
             - ./asterisk/config:/etc/asterisk
             - ./asterisk/logs:/var/log/asterisk
-        ports:
-            - "5038:5038"   # AMI (TCP)
-            - "5060:5060/udp"   # SIP (UDP) — TELEFON UCHUN!
-            - "10000-10100:10000-10100/udp"   # RTP (ovoz)
 
     php:
         container_name: ${DOCKER_PROJECT_NAME}_php
@@ -19,6 +15,8 @@ services:
         restart: unless-stopped
         networks:
             - app-network  # 🆕 QO‘SHILDI
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
         volumes:
             - ./:/var/www/html
             - ./docker/php/php.ini:/usr/local/etc/php/php.ini
