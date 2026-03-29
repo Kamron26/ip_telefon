@@ -1,4 +1,14 @@
 services:
+    asterisk:
+        image: andrius/asterisk
+        container_name: asterisk
+        network_mode: host
+        restart: always
+
+        volumes:
+            - ./asterisk/config:/etc/asterisk
+            - ./asterisk/logs:/var/log/asterisk
+
     php:
         container_name: ${DOCKER_PROJECT_NAME}_php
         build: ./docker/php
