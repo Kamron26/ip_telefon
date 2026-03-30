@@ -8,6 +8,7 @@ services:
         volumes:
             - ./asterisk/config:/etc/asterisk
             - ./asterisk/logs:/var/log/asterisk
+            - ./asterisk/records:/var/spool/asterisk/monitor
 
     php:
         container_name: ${DOCKER_PROJECT_NAME}_php
