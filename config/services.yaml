@@ -24,3 +24,22 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+
+    App\Service\Asterisk\Handler\:
+        resource: '../src/Service/Asterisk/Handler/'
+        autowire: true
+        autoconfigure: true
+
+    App\Service\Asterisk\Dispatcher\AsteriskEventDispatcher:
+        arguments:
+            $handlers: !tagged_iterator 'app.asterisk_event_handler'
+
+    App\Service\Asterisk\Handler\DialBeginHandler:
+        tags: ['app.asterisk_event_handler']
+
+    App\Service\Asterisk\Handler\BridgeEnterHandler:
+        tags: ['app.asterisk_event_handler']
+
+    App\Service\Asterisk\Handler\HangupHandler:
+        tags: ['app.asterisk_event_handler']
