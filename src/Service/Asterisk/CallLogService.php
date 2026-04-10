@@ -4,6 +4,7 @@ namespace App\Service\Asterisk;
 
 use App\Entity\CallLog;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Repository\Exception\InvalidFindByCall;
 use PAMI\Message\Event\EventMessage;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -19,6 +20,7 @@ class CallLogService
         $caller = $event->getKey('CallerIDNum') ?? '';
         $callee = $event->getKey('DestCallerIDNum') ?? '';
         $uniqueId = $event->getKey('Uniqueid') ?? '';
+        $linkedId = $event->getKey('Linkedid') ?? $uniqueId;
 
         $output->writeln("DialBegin: $caller -> $callee | uid=$uniqueId");
 
@@ -78,5 +80,26 @@ class CallLogService
         }
 
         $this->em->flush();
+    }
+
+    public function findCallByUniqueOrLinkedId(?string $uniqueId, ?string $linkedId): ?CallLog
+    {
+        $repo = $this->em->getRepository(CallLog::class);
+
+        if ($linkedId) {
+            $call = $repo->findOneBy(['linkedid' => $linkedId]);
+            if ($call) {
+                return $call;
+            }
+        }
+
+        if ($uniqueId) {
+            $call = $repo->findOneBy(['uniqueid' => $uniqueId]);
+            if ($call) {
+                return $call;
+            }
+        }
+
+        return null;
     }
 }

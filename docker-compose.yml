@@ -69,9 +69,7 @@ services:
     # Backup block. Turns on with docker compose --profile backup up -d
     telegram-bot-api:
         profiles:
-            - backup
-        env_file:
-            - .env.backup.local # copy from .env.backup.local.example as a template
+           ..ocal # copy from .env.backup.local.example as a template
         image: ghcr.io/bots-house/docker-telegram-bot-api:latest
         container_name: ${DOCKER_PROJECT_NAME}_tgbot
         restart: unless-stopped

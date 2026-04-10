@@ -45,6 +45,9 @@ class CallLog
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
+    #[ORM\Column(length: 60, nullable: true)]
+    private ?string $linkedid = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -173,6 +176,18 @@ class CallLog
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getLinkedid(): ?string
+    {
+        return $this->linkedid;
+    }
+
+    public function setLinkedid(?string $linkedid): static
+    {
+        $this->linkedid = $linkedid;
 
         return $this;
     }
