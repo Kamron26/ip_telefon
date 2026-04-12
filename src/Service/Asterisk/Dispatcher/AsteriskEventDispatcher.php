@@ -26,7 +26,5 @@ class AsteriskEventDispatcher
                 return;
             }
         }
-
-        $output->writeln(sprintf('No handler found for event: %s', $eventName));
     }
 }
