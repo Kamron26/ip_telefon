@@ -16,14 +16,10 @@ class RecordingService
     ) {
     }
 
-    public function handleMixMonitorStop(EventMessage $event, OutputInterface $output): void
+    public function saveForCall(string $uniqueId, string $linkedId, OutputInterface $output): void
     {
-        $uniqueId = $event->getKey('Uniqueid') ?? '';
-        $linkedId = $event->getKey('Linkedid') ?? $uniqueId;
-
-        $output->writeln("MixMonitorStop: uid=$uniqueId | linkedid=$linkedId");
-
         $call = $this->callLogService->findCallByUniqueOrLinkedId($uniqueId, $linkedId);
+
         if (!$call) {
             $output->writeln('Recording skip: call not found');
             return;
@@ -35,9 +31,11 @@ class RecordingService
             return;
         }
 
+        $dbPath = '/recordings/' . basename($filePath);
+
         $existing = $this->em->getRepository(Recording::class)->findOneBy([
             'cal' => $call,
-            'filePath' => $filePath,
+            'filePath' => $dbPath,
         ]);
 
         if ($existing) {
@@ -47,14 +45,24 @@ class RecordingService
 
         $recording = new Recording();
         $recording->setCal($call);
-        $recording->setFilePath($filePath);
+        $recording->setFilePath($dbPath);
         $recording->setFileSize(@filesize($filePath) ?: null);
         $recording->setCreatedAt(new \DateTimeImmutable());
 
         $this->em->persist($recording);
         $this->em->flush();
 
-        $output->writeln("Recording saved: $filePath");
+        $output->writeln("Recording saved: $dbPath");
+    }
+
+    public function handleMixMonitorStop(EventMessage $event, OutputInterface $output): void
+    {
+        $uniqueId = $event->getKey('Uniqueid') ?? '';
+        $linkedId = $event->getKey('Linkedid') ?? $uniqueId;
+
+        $output->writeln("MixMonitorStop: uid=$uniqueId | linkedid=$linkedId");
+
+        $this->saveForCall($uniqueId, $linkedId, $output);
     }
 
     private function findRecordingFile(?string $linkedId, ?string $uniqueId): ?string

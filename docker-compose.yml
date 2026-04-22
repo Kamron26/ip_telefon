@@ -15,7 +15,7 @@ services:
         build: ./docker/php
         restart: unless-stopped
         networks:
-            - app-network  # 🆕 QO‘SHILDI
+            - app-network
         extra_hosts:
             - "host.docker.internal:host-gateway"
         volumes:
@@ -26,7 +26,7 @@ services:
             - db
             - asterisk
         environment:
-            - ASTERISK_HOST=asterisk  # Konteyner nomi orqali ulanish
+            - ASTERISK_HOST=asterisk
             - ASTERISK_PORT=5038
             - ASTERISK_USER=admin
             - ASTERISK_PASS=1234
