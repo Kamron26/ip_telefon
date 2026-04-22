@@ -4,7 +4,6 @@ namespace App\Service\Asterisk;
 
 use App\Entity\CallLog;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Repository\Exception\InvalidFindByCall;
 use PAMI\Message\Event\EventMessage;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -18,17 +17,18 @@ class CallLogService
     public function handleDialBegin(EventMessage $event, OutputInterface $output): void
     {
         $caller = $event->getKey('CallerIDNum') ?? '';
-        $callee = $event->getKey('DestCallerIDNum') ?? '';
+        $callee = $event->getKey('DestCallerIDNum') ?? ($event->getKey('Exten') ?? '');
         $uniqueId = $event->getKey('Uniqueid') ?? '';
         $linkedId = $event->getKey('Linkedid') ?? $uniqueId;
 
-        $output->writeln("DialBegin: $caller -> $callee | uid=$uniqueId");
+        $output->writeln("DialBegin: $caller -> $callee | uid=$uniqueId | linkedid=$linkedId");
 
         $call = new CallLog();
         $call->setCaller($caller);
         $call->setCallee($callee);
         $call->setStatus('ringing');
         $call->setUniqueid($uniqueId);
+        $call->setLinkedid($linkedId);
         $call->setStartedAt(new \DateTimeImmutable());
         $call->setCreatedAt(new \DateTimeImmutable());
 
@@ -39,11 +39,11 @@ class CallLogService
     public function handleBridgeEnter(EventMessage $event, OutputInterface $output): void
     {
         $uniqueId = $event->getKey('Uniqueid') ?? '';
-        $output->writeln("BridgeEnter: uid=$uniqueId");
+        $linkedId = $event->getKey('Linkedid') ?? $uniqueId;
 
-        $call = $this->em->getRepository(CallLog::class)
-            ->findOneBy(['uniqueid' => $uniqueId]);
+        $output->writeln("BridgeEnter: uid=$uniqueId | linkedid=$linkedId");
 
+        $call = $this->findCallByUniqueOrLinkedId($uniqueId, $linkedId);
         if (!$call) {
             return;
         }
@@ -53,19 +53,17 @@ class CallLogService
             $call->setAnsweredAt(new \DateTimeImmutable());
             $this->em->flush();
         }
-
-        $output->writeln("Answered: uid=$uniqueId");
     }
 
     public function handleHangup(EventMessage $event, OutputInterface $output): void
     {
         $uniqueId = $event->getKey('Uniqueid') ?? '';
-        $output->writeln("Hangup: uid=$uniqueId");
+        $linkedId = $event->getKey('Linkedid') ?? $uniqueId;
 
-        $call = $this->em->getRepository(CallLog::class)
-            ->findOneBy(['uniqueid' => $uniqueId]);
+        $output->writeln("Hangup: uid=$uniqueId | linkedid=$linkedId");
 
-        if (!$call) {
+        $call = $this->findCallByUniqueOrLinkedId($uniqueId, $linkedId);
+        if (!$call || $call->getEndedAt() !== null) {
             return;
         }
 
@@ -73,8 +71,7 @@ class CallLogService
 
         if ($call->getAnsweredAt()) {
             $call->setStatus('finished');
-            $duration = time() - $call->getAnsweredAt()->getTimestamp();
-            $call->setDuration($duration);
+            $call->setDuration(time() - $call->getAnsweredAt()->getTimestamp());
         } else {
             $call->setStatus('missed');
         }

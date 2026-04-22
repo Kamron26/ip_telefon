@@ -1,15 +1,15 @@
-# Api Starter Kit
+# Ip Telefoniya
 
 [//]: <> ( todo udpate image and add new docker commands, tell about interfaces )
 
-
-Starter kit for API with 
+Telefoniya for API with 
 [Symfony Skeleton](https://symfony.com/),
 [Doctrine](https://www.doctrine-project.org/), 
 [Maker Bundle](https://symfony.com/doc/current/bundles/SymfonyMakerBundle/index.html), 
 [Migrations Bundle](https://symfony.com/doc/current/bundles/DoctrineMigrationsBundle/index.html), 
 [Api-Platform](https://api-platform.com/) and 
-[Lexik JWT-auth](https://jwt.io/).
+[Lexik JWT-auth](https://jwt.io/),
+[Asterisk](...).
 
 Kit has also already created User entity with all crud routes
 

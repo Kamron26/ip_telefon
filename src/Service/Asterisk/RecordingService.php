@@ -21,15 +21,15 @@ class RecordingService
         $uniqueId = $event->getKey('Uniqueid') ?? '';
         $linkedId = $event->getKey('Linkedid') ?? $uniqueId;
 
-        $call = $this->callLogService->findCallByUniqueOrLinkedId($uniqueId, $linkedId);
+        $output->writeln("MixMonitorStop: uid=$uniqueId | linkedid=$linkedId");
 
+        $call = $this->callLogService->findCallByUniqueOrLinkedId($uniqueId, $linkedId);
         if (!$call) {
             $output->writeln('Recording skip: call not found');
             return;
         }
 
         $filePath = $this->findRecordingFile($linkedId, $uniqueId);
-
         if (!$filePath) {
             $output->writeln('Recording skip: file not found');
             return;
@@ -54,7 +54,7 @@ class RecordingService
         $this->em->persist($recording);
         $this->em->flush();
 
-        $output->writeln("Recording saved: {$filePath}");
+        $output->writeln("Recording saved: $filePath");
     }
 
     private function findRecordingFile(?string $linkedId, ?string $uniqueId): ?string
