@@ -7,6 +7,7 @@ parameters:
     tokens_creator.access_expiration_period: '%env(TOKEN_ACCESS_EXPIRATION_PERIOD)%'
     tokens_creator.refresh_expiration_period: '%env(TOKEN_REFRESH_EXPIRATION_PERIOD)%'
     app.recording_base_dir: '%env(resolve:ASTERISK_RECORDING_BASE_DIR)%'
+    app.asterisk_pjsip_extensions_file: '%kernel.project_dir%/asterisk/config/pjsip_extensions.conf'
 
 services:
     _defaults:
@@ -55,3 +56,8 @@ services:
 
     App\Service\Asterisk\Handler\DeviceStateChangeHandler:
         tags: [ 'app.asterisk_event_handler' ]
+
+    App\Service\Asterisk\AsteriskPjsipConfigGeneratorService:
+        arguments:
+            $outputFile: '%app.asterisk_pjsip_extensions_file%'
+
