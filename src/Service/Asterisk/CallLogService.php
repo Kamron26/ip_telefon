@@ -6,6 +6,7 @@ use App\Entity\CallLog;
 use Doctrine\ORM\EntityManagerInterface;
 use PAMI\Message\Event\EventMessage;
 use Symfony\Component\Console\Output\OutputInterface;
+use App\Entity\Extension;
 
 class CallLogService
 {
@@ -26,6 +27,16 @@ class CallLogService
         $call = new CallLog();
         $call->setCaller($caller);
         $call->setCallee($callee);
+        $fromExtension = $this->em->getRepository(Extension::class)->findOneBy([
+            'number' => $caller,
+        ]);
+
+        $toExtension = $this->em->getRepository(Extension::class)->findOneBy([
+            'number' => $callee,
+        ]);
+
+        $call->setFromExtension($fromExtension);
+        $call->setToExtension($toExtension);
         $call->setStatus('ringing');
         $call->setUniqueid($uniqueId);
         $call->setLinkedid($linkedId);

@@ -48,6 +48,13 @@ class CallLog
     #[ORM\Column(length: 60, nullable: true)]
     private ?string $linkedid = null;
 
+    #[ORM\ManyToOne(targetEntity: Extension::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Extension $fromExtension = null;
+
+    #[ORM\ManyToOne(targetEntity: Extension::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Extension $toExtension = null;
     public function getId(): ?int
     {
         return $this->id;
@@ -189,6 +196,28 @@ class CallLog
     {
         $this->linkedid = $linkedid;
 
+        return $this;
+    }
+
+    public function getFromExtension(): ?Extension
+    {
+        return $this->fromExtension;
+    }
+
+    public function setFromExtension(?Extension $fromExtension): static
+    {
+        $this->fromExtension = $fromExtension;
+        return $this;
+    }
+
+    public function getToExtension(): ?Extension
+    {
+        return $this->toExtension;
+    }
+
+    public function setToExtension(?Extension $toExtension): static
+    {
+        $this->toExtension = $toExtension;
         return $this;
     }
 }
