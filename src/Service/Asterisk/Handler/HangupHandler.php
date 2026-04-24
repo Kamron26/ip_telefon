@@ -7,7 +7,7 @@ use App\Service\Asterisk\RecordingService;
 use PAMI\Message\Event\EventMessage;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class HangupHandler
+class HangupHandler implements EventHandlerInterface
 {
     public function __construct(
         private readonly CallLogService $callLogService,
@@ -15,9 +15,9 @@ class HangupHandler
     ) {
     }
 
-    public function supports(EventMessage $event): bool
+    public function supports(string $eventName): bool
     {
-        return $event->getName() === 'Hangup';
+        return $eventName === 'Hangup';
     }
 
     public function handle(EventMessage $event, OutputInterface $output): void

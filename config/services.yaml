@@ -49,3 +49,9 @@ services:
 
     App\Service\Asterisk\Handler\SoftHangupRequestHandler:
         tags: [ 'app.asterisk_event_handler' ]
+
+    App\Service\Asterisk\Handler\ContactStatusHandler:
+        tags: [ 'app.asterisk_event_handler' ]
+
+    App\Service\Asterisk\Handler\DeviceStateChangeHandler:
+        tags: [ 'app.asterisk_event_handler' ]

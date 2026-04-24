@@ -16,7 +16,7 @@ class BridgeEnterHandler implements EventHandlerInterface
 
     public function supports(string $eventName): bool
     {
-        return $eventName === AsteriskEventNames::BRIDGE_ENTER;
+        return $eventName === 'BridgeEnter';
     }
 
     public function handle(EventMessage $event, OutputInterface $output): void

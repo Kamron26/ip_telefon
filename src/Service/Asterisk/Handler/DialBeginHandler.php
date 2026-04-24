@@ -16,7 +16,7 @@ class DialBeginHandler implements EventHandlerInterface
 
     public function supports(string $eventName): bool
     {
-        return $eventName === AsteriskEventNames::DIAL_BEGIN;
+        return $eventName === 'DialBegin';
     }
 
     public function handle(EventMessage $event, OutputInterface $output): void

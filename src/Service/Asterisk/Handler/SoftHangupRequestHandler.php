@@ -16,7 +16,7 @@ class SoftHangupRequestHandler implements EventHandlerInterface
 
     public function supports(string $eventName): bool
     {
-        return $eventName === AsteriskEventNames::SOFT_HANGUP_REQUEST;
+        return $eventName === 'SoftHangupRequest';
     }
 
     public function handle(EventMessage $event, OutputInterface $output): void
