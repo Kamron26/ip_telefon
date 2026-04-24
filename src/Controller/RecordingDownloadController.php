@@ -18,6 +18,8 @@ class RecordingDownloadController extends AbstractController
         }
 
         $response = new BinaryFileResponse($path);
+        $response->headers->set('Content-Type', 'audio/wav');
+
         $response->setContentDisposition(
             ResponseHeaderBag::DISPOSITION_INLINE,
             basename($path)

@@ -47,6 +47,11 @@ class Recording
     #[Groups(['recording:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
+    #[Groups(['recording:read'])]
+    public function getDownloadUrl(): ?string
+    {
+        return $this->id ? '/api/recordings/' . $this->id . '/download' : null;
+    }
     public function getId(): ?int
     {
         return $this->id;

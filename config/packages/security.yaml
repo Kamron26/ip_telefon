@@ -63,7 +63,7 @@ security:
 
         main:
             stateless: true
-            security: true
+            security: false
             provider: entity_provider
             # provider: jwt # if you use microservices
             jwt: ~
